@@ -1,0 +1,29 @@
+---
+- name: Cleanup previous K3S server configurations.
+  command: /usr/local/bin/k3s-uninstall.sh
+  ignore_errors: true
+
+- name: Cleanup previous K3S agent configurations.
+  command: /usr/local/bin/k3s-agent-uninstall.sh
+  ignore_errors: true
+
+- name: Remove swapfile from /etc/fstab
+  mount:
+    name: "{{ item }}"
+    fstype: swap
+    state: absent
+  with_items:
+    - swap
+    - none
+
+- name: Disable swap
+  command: swapoff -a
+  when: ansible_swaptotal_mb > 0
+
+- name: Ensure dependencies are installed.
+  apt:
+    name:
+      - apt-transport-https
+      - ca-certificates
+      - curl
+    state: present

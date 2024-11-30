@@ -1,0 +1,22 @@
+# ~/.ssh/config
+
+{% set master = kubernetes_master_node|from_json %}
+{% set worker = kubernetes_worker_node|from_json %}
+
+# Jumphost configuration (machine with public IP)
+Host {{ master.name }}
+    HostName {{ publicIp }}
+    User ubuntu
+    IdentityFile ~/.ssh/{{ master.key_pair }}
+    ServerAliveInterval 60
+
+{% for ip in workerIps.split(',') %}
+# Internal machine configuration
+Host {{ worker.name }}-{{ loop.index }}
+    HostName {{ ip }}
+    User ubuntu
+    IdentityFile ~/.ssh/{{ worker.key_pair }}
+    ProxyJump {{ master.name }}
+    ServerAliveInterval 60
+
+{% endfor %}

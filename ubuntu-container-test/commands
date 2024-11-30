@@ -1,0 +1,19 @@
+kubectl apply -f ubuntu-rwo-pvc.yaml
+kubectl apply -f ubuntu-master-pod.yaml
+# After using the volume
+kubectl delete -f ubuntu-master-pod.yaml
+# https://github.com/ceph/ceph-csi/issues/3000
+kubectl apply -f volumesnapshot.yaml
+kubectl apply -f ubuntu-rox-pvc.yaml
+kubectl apply -f ubuntu-worker-pod.yaml
+
+#https://stackoverflow.com/questions/62309755/how-can-i-mount-the-same-persistent-volume-on-multiple-pods
+
+kubectl delete-f ubuntu-rwo-pvc.yaml
+kubectl delete -f ubuntu-master-pod.yaml
+# After using the volume
+kubectl delete -f ubuntu-master-pod.yaml
+# https://github.com/ceph/ceph-csi/issues/3000
+kubectl delete -f volumesnapshot.yaml
+kubectl delete -f ubuntu-rox-pvc.yaml
+kubectl delete -f ubuntu-worker-pod.yaml

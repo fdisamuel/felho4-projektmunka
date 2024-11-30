@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: ubuntu-master
+spec:
+  containers:
+  - name: ubuntu
+    image: ubuntu
+    command: ["sleep", "604800"]
+    volumeMounts:
+    - mountPath: "/data"
+      name: ceph-block-storage
+  volumes:
+  - name: ceph-block-storage
+    persistentVolumeClaim:
+      claimName: ceph-block-pvc
+  nodeSelector:
+    kubernetes.io/hostname: foldis-k8s-master

@@ -1,0 +1,8 @@
+---
+- name: Create Kubernetes master
+  hosts: all
+  remote_user: ubuntu
+  become: yes
+  roles:
+    - kubernetes_setup
+    - kubernetes_master
