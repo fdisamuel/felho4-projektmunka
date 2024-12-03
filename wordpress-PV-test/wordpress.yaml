@@ -7,10 +7,12 @@ metadata:
 spec:
   ports:
     - port: 80
+      targetPort: 80
   selector:
     app: wordpress
     tier: frontend
-  type: LoadBalancer
+  type: ClusterIP
+  sessionAffinity: ClientIP  # Add session affinity
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -19,9 +21,9 @@ metadata:
   labels:
     app: wordpress
 spec:
-  storageClassName: rook-ceph-block
+  storageClassName: rook-cephfs  # Use CephFS instead of block storage
   accessModes:
-    - ReadWriteOnce
+    - ReadWriteMany
   resources:
     requests:
       storage: 20Gi
@@ -34,12 +36,16 @@ metadata:
     app: wordpress
     tier: frontend
 spec:
+  replicas: 3  # Add multiple replicas
   selector:
     matchLabels:
       app: wordpress
       tier: frontend
   strategy:
-    type: Recreate
+    type: RollingUpdate  # Change from Recreate to RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
   template:
     metadata:
       labels:
@@ -60,6 +66,18 @@ spec:
           volumeMounts:
             - name: wordpress-persistent-storage
               mountPath: /var/www/html
+          readinessProbe:  # Add health checks
+            httpGet:
+              path: /wp-admin/install.php
+              port: 80
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /wp-admin/install.php
+              port: 80
+            initialDelaySeconds: 30
+            periodSeconds: 10
       volumes:
         - name: wordpress-persistent-storage
           persistentVolumeClaim:
